@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple PC Performance Tester</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background-color: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        .result {
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #f9f9f9;
+            border-radius: 5px;
+            display: none;
+        }
+        .progress-bar {
+            width: 100%;
+            background-color: #e0e0e0;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .progress {
+            height: 20px;
+            background-color: #4CAF50;
+            border-radius: 5px;
+            width: 0%;
+            transition: width 0.3s;
+        }
+        .score {
+            font-size: 24px;
+            font-weight: bold;
+            text-align: center;
+            margin: 20px 0;
+            color: #2c3e50;
+        }
+        .system-info {
+            background-color: #f0f0f0;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Simple PC Performance Tester</h1>
+        
+        <div class="system-info">
+            <h3>System Information</h3>
+            <p id="browser-info">Browser: </p>
+            <p id="os-info">Operating System: </p>
+            <p id="cores-info">CPU Cores: </p>
+            <p id="memory-info">Memory: </p>
+        </div>
+        
+        <div class="test-section">
+            <h3>1. CPU Performance Test</h3>
+            <p>This test measures your processor's calculation speed.</p>
+            <button onclick="runCpuTest()">Run CPU Test</button>
+            <div id="cpu-result" class="result"></div>
+            <div class="progress-bar">
+                <div id="cpu-progress" class="progress"></div>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h3>2. GPU Performance Test</h3>
+            <p>This test measures your graphics rendering capability.</p>
+            <button onclick="runGpuTest()">Run GPU Test</button>
+            <div id="gpu-result" class="result"></div>
+            <div class="progress-bar">
+                <div id="gpu-progress" class="progress"></div>
+            </div>
+            <canvas id="gpu-canvas" width="500" height="300" style="display:none; border:1px solid #ddd; margin-top:10px;"></canvas>
+        </div>
+        
+        <div class="test-section">
+            <h3>3. Memory Performance Test</h3>
+            <p>This test measures your RAM speed.</p>
+            <button onclick="runMemoryTest()">Run Memory Test</button>
+            <div id="memory-result" class="result"></div>
+            <div class="progress-bar">
+                <div id="memory-progress" class="progress"></div>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h3>4. Storage Performance Test</h3>
+            <p>This test measures your storage read/write speed (limited by browser security restrictions).</p>
+            <button onclick="runStorageTest()">Run Storage Test</button>
+            <div id="storage-result" class="result"></div>
+            <div class="progress-bar">
+                <div id="storage-progress" class="progress"></div>
+            </div>
+        </div>
+        
+        <button onclick="runAllTests()" style="background-color: #27ae60; display: block; width: 100%; padding: 15px; margin: 20px 0;">Run All Tests</button>
+        
+        <div id="final-score" class="score"></div>
+    </div>
+
+    <script>
+        // System information
+        document.getElementById('browser-info').textContent += navigator.userAgent;
+        document.getElementById('os-info').textContent += navigator.platform;
+        document.getElementById('cores-info').textContent += navigator.hardwareConcurrency || 'Unknown';
+        
+        // Memory information (not available in all browsers)
+        if (window.performance && performance.memory) {
+            const memory = performance.memory;
+            const totalMB = Math.round(memory.jsHeapSizeLimit / (1024 * 1024));
+            document.getElementById('memory-info').textContent += `Total heap size: ${totalMB} MB`;
+        } else {
+            document.getElementById('memory-info').textContent += 'Memory information not available';
+        }
+        
+        // Test variables
+        let cpuScore = 0;
+        let gpuScore = 0;
+        let memoryScore = 0;
+        let storageScore = 0;
+        
+        // CPU Test
+        function runCpuTest() {
+            const startTime = performance.now();
+            const progressBar = document.getElementById('cpu-progress');
+            const resultDiv = document.getElementById('cpu-result');
+            
+            // Show progress
+            progressBar.style.width = '0%';
+            resultDiv.style.display = 'none';
+            
+            // Complex calculations to test CPU
+            let progress = 0;
+            let calculations = 0;
+            const totalCalculations = 10000000;
+            
+            function calculateChunk() {
+                const chunkSize = 100000;
+                for (let i = 0; i < chunkSize; i++) {
+                    calculations += Math.sqrt(Math.random()) * Math.tan(Math.random());
+                }
+                
+                progress += chunkSize;
+                const percent = Math.min(100, (progress / totalCalculations) * 100);
+                progressBar.style.width = percent + '%';
+                
+                if (progress < totalCalculations) {
+                    setTimeout(calculateChunk, 0); // Allow UI to update
+                } else {
+                    const endTime = performance.now();
+                    const duration = (endTime - startTime) / 1000; // in seconds
+                    
+                    // Calculate score (higher is better)
+                    cpuScore = Math.round(100000 / duration);
+                    
+                    resultDiv.innerHTML = `CPU Test completed in ${duration.toFixed(2)} seconds.<br>
+                                          CPU Score: <strong>${cpuScore}</strong>`;
+                    resultDiv.style.display = 'block';
+                    updateFinalScore();
+                }
+            }
+            
+            calculateChunk();
+        }
+        
+        // GPU Test
+        function runGpuTest() {
+            const startTime = performance.now();
+            const progressBar = document.getElementById('gpu-progress');
+            const resultDiv = document.getElementById('gpu-result');
+            const canvas = document.getElementById('gpu-canvas');
+            const ctx = canvas.getContext('2d');
+            
+            // Show progress
+            progressBar.style.width = '0%';
+            resultDiv.style.display = 'none';
+            canvas.style.display = 'block';
+            
+            // Clear canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw complex shapes to test GPU
+            const totalFrames = 100;
+            let framesCompleted = 0;
+            
+            function drawFrame() {
+                // Clear canvas
+                ctx.fillStyle = 'white';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                
+                // Draw complex shapes
+                for (let i = 0; i < 100; i++) {
+                    const x = Math.random() * canvas.width;
+                    const y = Math.random() * canvas.height;
+                    const radius = Math.random() * 30 + 10;
+                    const hue = Math.random() * 360;
+                    
+                    ctx.beginPath();
+                    ctx.arc(x, y, radius, 0, Math.PI * 2);
+                    ctx.fillStyle = `hsl(${hue}, 100%, 50%)`;
+                    ctx.fill();
+                    ctx.strokeStyle = 'black';
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+                    
+                    // Add some gradients
+                    const grad = ctx.createRadialGradient(x, y, 0, x, y, radius);
+                    grad.addColorStop(0, `hsl(${hue}, 100%, 80%)`);
+                    grad.addColorStop(1, `hsl(${hue}, 100%, 30%)`);
+                    ctx.fillStyle = grad;
+                    ctx.fill();
+                }
+                
+                framesCompleted++;
+                const percent = (framesCompleted / totalFrames) * 100;
+                progressBar.style.width = percent + '%';
+                
+                if (framesCompleted < totalFrames) {
+                    requestAnimationFrame(drawFrame);
+                } else {
+                    const endTime = performance.now();
+                    const duration = (endTime - startTime) / 1000; // in seconds
+                    
+                    // Calculate score (higher is better)
+                    gpuScore = Math.round((totalFrames * 100) / duration);
+                    
+                    resultDiv.innerHTML = `GPU Test completed in ${duration.toFixed(2)} seconds.<br>
+                                          GPU Score: <strong>${gpuScore}</strong>`;
+                    resultDiv.style.display = 'block';
+                    canvas.style.display = 'none';
+                    updateFinalScore();
+                }
+            }
+            
+            drawFrame();
+        }
+        
+        // Memory Test
+        function runMemoryTest() {
+            const startTime = performance.now();
+            const progressBar = document.getElementById('memory-progress');
+            const resultDiv = document.getElementById('memory-result');
+            
+            // Show progress
+            progressBar.style.width = '0%';
+            resultDiv.style.display = 'none';
+            
+            // Allocate and manipulate large arrays
+            const size = 1000000; // 1 million elements
+            let progress = 0;
+            const chunks = 100;
+            const chunkSize = size / chunks;
+            
+            let data = new Array(size);
+            
+            function processChunk() {
+                const startIdx = progress * chunkSize;
+                const endIdx = startIdx + chunkSize;
+                
+                for (let i = startIdx; i < endIdx; i++) {
+                    data[i] = Math.random();
+                    // Perform some operations
+                    data[i] = Math.sin(data[i]) * Math.cos(data[i]);
+                }
+                
+                progress++;
+                const percent = (progress / chunks) * 100;
+                progressBar.style.width = percent + '%';
+                
+                if (progress < chunks) {
+                    setTimeout(processChunk, 0); // Allow UI to update
+                } else {
+                    const endTime = performance.now();
+                    const duration = (endTime - startTime) / 1000; // in seconds
+                    
+                    // Calculate score (higher is better)
+                    memoryScore = Math.round((size / 10000) / duration);
+                    
+                    resultDiv.innerHTML = `Memory Test completed in ${duration.toFixed(2)} seconds.<br>
+                                          Memory Score: <strong>${memoryScore}</strong>`;
+                    resultDiv.style.display = 'block';
+                    updateFinalScore();
+                    
+                    // Free memory
+                    data = null;
+                }
+            }
+            
+            processChunk();
+        }
+        
+        // Storage Test (limited by browser security)
+        function runStorageTest() {
+            const startTime = performance.now();
+            const progressBar = document.getElementById('storage-progress');
+            const resultDiv = document.getElementById('storage-result');
+            
+            // Show progress
+            progressBar.style.width = '0%';
+            resultDiv.style.display = 'none';
+            
+            // Test localStorage speed
+            const testSize = 10000; // Number of operations
+            let progress = 0;
+            const testKey = 'perf_test_key';
+            
+            function performStorageOperation() {
+                const chunkSize = 100;
+                const startProgress = progress;
+                const endProgress = Math.min(testSize, progress + chunkSize);
+                
+                for (let i = startProgress; i < endProgress; i++) {
+                    // Write and read data
+                    localStorage.setItem(testKey, Math.random().toString());
+                    const data = localStorage.getItem(testKey);
+                    localStorage.removeItem(testKey);
+                }
+                
+                progress = endProgress;
+                const percent = (progress / testSize) * 100;
+                progressBar.style.width = percent + '%';
+                
+                if (progress < testSize) {
+                    setTimeout(performStorageOperation, 0); // Allow UI to update
+                } else {
+                    const endTime = performance.now();
+                    const duration = (endTime - startTime) / 1000; // in seconds
+                    
+                    // Calculate score (higher is better)
+                    storageScore = Math.round((testSize * 10) / duration);
+                    
+                    resultDiv.innerHTML = `Storage Test completed in ${duration.toFixed(2)} seconds.<br>
+                                          Storage Score: <strong>${storageScore}</strong>`;
+                    resultDiv.style.display = 'block';
+                    updateFinalScore();
+                }
+            }
+            
+            performStorageOperation();
+        }
+        
+        // Run all tests
+        function runAllTests() {
+            // Reset scores
+            cpuScore = 0;
+            gpuScore = 0;
+            memoryScore = 0;
+            storageScore = 0;
+            document.getElementById('final-score').textContent = '';
+            
+            // Run tests sequentially
+            runCpuTest();
+            setTimeout(runGpuTest, 5000);
+            setTimeout(runMemoryTest, 10000);
+            setTimeout(runStorageTest, 15000);
+        }
+        
+        // Update final score
+        function updateFinalScore() {
+            if (cpuScore > 0 && gpuScore > 0 && memoryScore > 0 && storageScore > 0) {
+                const totalScore = cpuScore + gpuScore + memoryScore + storageScore;
+                document.getElementById('final-score').innerHTML = `
+                    <h2>Final Score</h2>
+                    <p style="font-size: 36px;">${totalScore}</p>
+                    <p>CPU: ${cpuScore} | GPU: ${gpuScore} | Memory: ${memoryScore} | Storage: ${storageScore}</p>
+                `;
+            }
+        }
+    </script>
+</body>
+</html>
